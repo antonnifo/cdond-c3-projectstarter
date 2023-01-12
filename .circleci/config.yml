@@ -156,10 +156,37 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - project/.circleci/ansible/inventory.txt 
+      - destroy-environment   
 
-      # Here's where you will add some code to rollback on failure 
-      - destroy-environment     
+  configure-infrastructure:
+    docker:
+      # Docker image here that supports Ansible
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+           fingerprints: ["e8:c6:8d:ad:08:e3:e1:9a:f9:1f:d7:79:a7:22:d4:f3"]
+      # attach workspace
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            yum install -y gcc libffi-devel python3 epel-release && \
+            yum install -y python3-pip && \
+            yum install -y wget && \
+            yum clean all && \
+            yum update -y && \
+            yum install -y tar gzip curl unzip openssh-server openssh-clients && \
+            python3 -m pip install ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+  
 
 
 workflows:
@@ -179,4 +206,6 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
-              only: [master]                    
+              only: [master]  
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]                                
