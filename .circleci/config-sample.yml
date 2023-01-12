@@ -295,3 +295,6 @@ workflows:
           requires: [smoke-test]
       - cleanup:
           requires: [cloudfront-update]
+
+
+          # ec2-3-82-204-128.compute-1.amazonaws.com
