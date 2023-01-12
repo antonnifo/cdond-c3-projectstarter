@@ -165,12 +165,8 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      # Add ssh keys with fingerprint
       - add_ssh_keys:
            fingerprints: ["e8:c6:8d:ad:08:e3:e1:9a:f9:1f:d7:79:a7:22:d4:f3"]
-      # attach workspace
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -181,12 +177,35 @@ jobs:
             yum update -y && \
             yum install -y tar gzip curl unzip openssh-server openssh-clients && \
             python3 -m pip install ansible
+
+      - attach_workspace:
+          at: ~/
+                      
       - run:
           name: Configure server
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-  
+
+  run-migrations:
+    docker:
+      # Docker image here that supports NodeJS
+      - image: circleci/node:13.8.0
+    steps:
+      # Checkout code from git
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install --no-audit --no-fund
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to memstash
+          command: |
+            # Your code here
+            exit 1
+     # Here's where you will add some code to rollback on failure    
 
 
 workflows:
