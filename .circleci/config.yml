@@ -282,7 +282,6 @@ jobs:
        - image: python:3.7-alpine3.16
     steps:
       - checkout
-      # Add ssh keys with fingerprint
       - add_ssh_keys:
            fingerprints: ["e8:c6:8d:ad:08:e3:e1:9a:f9:1f:d7:79:a7:22:d4:f3"]      
       - run:
@@ -335,9 +334,9 @@ workflows:
               only: [master]  
       - configure-infrastructure:
           requires: [deploy-infrastructure] 
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]                                         
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]                                         
